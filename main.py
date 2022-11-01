@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, pyplot
 data = pd.read_csv('penguins.csv')
 
 # find important columns name which contain  numeric values
-numbers_cols = data.select_dtypes(include= np.number).columns.to_list()
+numbers_cols = data.select_dtypes(include=np.number).columns.to_list()
 
 # find important columns name which contain nun numeric values & convert it's type to string
 non_integer_cols = data.select_dtypes(include=['object']).columns.to_list()
@@ -26,7 +26,8 @@ Chinstrap = data.iloc[100: 150, :]
 nan_val_in_Adelie = {}
 nan_val_in_Gentoo = {}
 nan_val_in_Chinstrap = {}
-# replace 'nan' with median in integer cols & with most repeated value in 'gender' col.
+
+# find values for 'nan' with median in integer cols & with most repeated value in 'gender' col.
 # for integer col
 for col in numbers_cols:
     nan_val_in_Adelie[col] = Adelie[col].median()
@@ -38,4 +39,13 @@ nan_val_in_Adelie['gender'] = Adelie['gender'].mode()[0]
 nan_val_in_Gentoo['gender'] = Gentoo['gender'].mode()[0]
 nan_val_in_Chinstrap['gender'] = Chinstrap['gender'].mode()[0]
 
-print(nan_val_in_Adelie)
+# replace nan
+# in Adelie
+Adelie = Adelie.fillna(value=nan_val_in_Adelie)
+# in Gentoo
+Gentoo = Gentoo.fillna(value=nan_val_in_Gentoo)
+# in Chinstrap
+Chinstrap = Chinstrap.fillna(value=nan_val_in_Chinstrap)
+
+
+print(Adelie)
