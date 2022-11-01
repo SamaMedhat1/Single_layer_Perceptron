@@ -18,4 +18,8 @@ label_encoder = preprocessing.LabelEncoder()
 data['species'] = label_encoder.fit_transform(data['species'])
 label_encoders.append(label_encoder)
 
+# split data based on specie
+Adelie = data.iloc[0:50, :]
+Gentoo = data.iloc[50: 100, :]
+Chinstrap = data.iloc[100: 150, :]
 
