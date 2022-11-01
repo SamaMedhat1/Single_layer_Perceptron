@@ -1,6 +1,7 @@
 # Single_layer_Perceptron
  Python GUI app contains an implemantion for Single layer Perceptron model applyied on Penguins data set consists of 50 samples from each of three species(Adelie, Gentoo and Chinstrap).  
- Five features were measured (in millimeter) from each sample:
+ 
+Five features were measured (in millimeter) from each sample:
    -bill_length,
    -bill_depth, 
    -flipper_length, 
