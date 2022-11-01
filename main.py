@@ -47,5 +47,13 @@ Gentoo = Gentoo.fillna(value=nan_val_in_Gentoo)
 # in Chinstrap
 Chinstrap = Chinstrap.fillna(value=nan_val_in_Chinstrap)
 
+# Encoding gender column
+genders = ['male', 'female']
+label_encoder = preprocessing.LabelEncoder()
+label_encoder.fit(genders)
+Adelie[Adelie.columns[4]] = label_encoder.transform(Adelie['gender'])
+Gentoo[Gentoo.columns[4]] = label_encoder.transform(Gentoo['gender'])
+Chinstrap[Chinstrap.columns[4]] = label_encoder.transform(Chinstrap['gender'])
+label_encoders.append(label_encoder)
 
-print(Adelie)
+print(Gentoo)
