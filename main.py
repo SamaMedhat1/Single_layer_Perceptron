@@ -24,8 +24,8 @@ Gentoo = data.iloc[50: 100, :]
 Chinstrap = data.iloc[100: 150, :]
 
 # correct dfs index
-Gentoo.set_index(pd.Index(range(50)), inplace=True)
-Chinstrap.set_index(pd.Index(range(50)), inplace=True)
+# Gentoo.set_index(pd.Index(range(50)), inplace=True)
+# Chinstrap.set_index(pd.Index(range(50)), inplace=True)
 
 nan_val_in_Adelie = {}
 nan_val_in_Gentoo = {}
@@ -60,4 +60,17 @@ Gentoo[Gentoo.columns[4]] = label_encoder.transform(Gentoo['gender'])
 Chinstrap[Chinstrap.columns[4]] = label_encoder.transform(Chinstrap['gender'])
 label_encoders.append(label_encoder)
 
-print(Gentoo)
+# data shuffling
+Adelie = Adelie.sample(frac=1).reset_index(drop=True)
+Gentoo = Gentoo.sample(frac=1).reset_index(drop=True)
+Chinstrap = Chinstrap.sample(frac=1).reset_index(drop=True)
+
+# split data into train data and test data
+Adelie_train = Adelie.iloc[:30, :]
+Adelie_test = Adelie.iloc[30:, :].reset_index(drop=True)
+Gentoo_train = Gentoo.iloc[:30, :]
+Gentoo_test = Gentoo.iloc[30:, :].reset_index(drop=True)
+Chinstrap_train = Chinstrap.iloc[:30, :]
+Chinstrap_test = Chinstrap.iloc[30:, :].reset_index(drop=True)
+
+print(Gentoo_test)
