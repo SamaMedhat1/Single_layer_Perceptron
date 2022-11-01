@@ -23,3 +23,19 @@ Adelie = data.iloc[0:50, :]
 Gentoo = data.iloc[50: 100, :]
 Chinstrap = data.iloc[100: 150, :]
 
+nan_val_in_Adelie = {}
+nan_val_in_Gentoo = {}
+nan_val_in_Chinstrap = {}
+# replace 'nan' with median in integer cols & with most repeated value in 'gender' col.
+# for integer col
+for col in numbers_cols:
+    nan_val_in_Adelie[col] = Adelie[col].median()
+    nan_val_in_Gentoo[col] = Gentoo[col].median()
+    nan_val_in_Chinstrap[col] = Chinstrap[col].median()
+
+# for gender
+nan_val_in_Adelie['gender'] = Adelie['gender'].mode()[0]
+nan_val_in_Gentoo['gender'] = Gentoo['gender'].mode()[0]
+nan_val_in_Chinstrap['gender'] = Chinstrap['gender'].mode()[0]
+
+print(nan_val_in_Adelie)
