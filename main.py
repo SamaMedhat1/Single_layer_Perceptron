@@ -23,6 +23,10 @@ Adelie = data.iloc[0:50, :]
 Gentoo = data.iloc[50: 100, :]
 Chinstrap = data.iloc[100: 150, :]
 
+# correct dfs index
+Gentoo.set_index(pd.Index(range(50)), inplace=True)
+Chinstrap.set_index(pd.Index(range(50)), inplace=True)
+
 nan_val_in_Adelie = {}
 nan_val_in_Gentoo = {}
 nan_val_in_Chinstrap = {}
