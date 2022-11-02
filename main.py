@@ -8,7 +8,7 @@ from tkinter.ttk import *
 # GUI
 form = Tk()
 classes = ['Adelie', 'Gentoo', 'Chinstrap']
-features = ['body mass', 'flipper length', 'bill depth', 'bill length', 'gender']
+features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'gender', 'body_mass_g']
 data1 = StringVar()
 data2 = StringVar()
 data3 = StringVar()
@@ -34,7 +34,7 @@ def user_inputs():
     selectedFeature2 = data4.get()
     lR = var1.get()
     epochNum = var2.get()
-    use_bias =True
+    use_bias = True
     if radio_var.get() == 1:
         use_bias = True
     elif radio_var.get() == 2:
@@ -45,10 +45,57 @@ def user_inputs():
 
 def initialize_Model_Dfs():
     selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias = user_inputs()
+    if use_bias:
+        weights = np.zeros(61)
+    else:
+        weights = np.zeros(60)
+
+    # create train & test data based on user selection
+    # 1) select species
+    train_frames = []
+    test_frames = []
+    if selectedClass1 == 'Adelie':
+        train_frames.append(Adelie_train)
+        test_frames.append(Adelie_test)
+    elif selectedClass1 == 'Gentoo':
+        train_frames.append(Gentoo_train)
+        test_frames.append(Gentoo_test)
+    else:
+        train_frames.append(Chinstrap_train)
+        test_frames.append(Chinstrap_test)
+
+    if selectedClass2 == 'Adelie':
+        train_frames.append(Adelie_train)
+        test_frames.append(Adelie_test)
+    elif selectedClass2 == 'Gentoo':
+        train_frames.append(Gentoo_train)
+        test_frames.append(Gentoo_test)
+    else:
+        train_frames.append(Chinstrap_train)
+        test_frames.append(Chinstrap_test)
+
+    train_data = pd.concat(train_frames).reset_index(drop=True)
+    test_data = pd.concat(test_frames).reset_index(drop=True)
+
+    # 2) keep only selected features
+    train_data = train_data[['species', selectedFeature1, selectedFeature2]]
+    test_data = test_data[['species',selectedFeature1, selectedFeature2]]
+    print(train_data)
+    # data shuffling
+    train_data = train_data.sample(frac=1).reset_index(drop=True)
+    test_data = test_data.sample(frac=1).reset_index(drop=True)
+
+    # separate labels
+    train_labels = train_data['species']
+    test_labels = test_data['species']
+
+    # add bias
+
+    return train_data, train_labels, test_data, test_labels, weights
 
 
 def run_single_layer():
-    initialize_Model_Dfs()
+    train_data, train_labels, test_data, test_labels, weights = initialize_Model_Dfs()
 
 
 def create_label():
