@@ -51,10 +51,15 @@ for firstFeatureIdx in range(1, 6):
         secondFeature = columnNames[secondFeatureIdx]
         figureName = str(firstFeature) + ' & ' + str(secondFeature)
         plt.figure(figureName)
-        plt.scatter(adelie[firstFeature], adelie[secondFeature])
-        plt.scatter(gentoo[firstFeature], gentoo[secondFeature])
-        plt.scatter(chinstrap[firstFeature], chinstrap[secondFeature])
+        specie1 = plt.scatter(adelie[firstFeature], adelie[secondFeature])
+        specie2 = plt.scatter(gentoo[firstFeature], gentoo[secondFeature])
+        specie3 = plt.scatter(chinstrap[firstFeature], chinstrap[secondFeature])
         plt.xlabel(firstFeature)
         plt.ylabel(secondFeature)
+        plt.legend((specie1, specie2, specie3),
+                   ('adelie', 'gentoo', 'chinstrap'),
+                   scatterpoints=1,
+                   fontsize=8
+                   )
         plt.show()
         # plt.savefig(figureName)
