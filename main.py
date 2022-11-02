@@ -28,13 +28,23 @@ feature2 = Combobox(form, width=20, textvariable=data4)
 
 
 def run_single_layer():
-    
-
+    selectedClass1 = data1.get()
+    selectedClass2 = data2.get()
+    selectedFeature1 = data3.get()
+    selectedFeature2 = data4.get()
+    lR = var1.get()
+    epochNum = var2.get()
+    if radio_var.get() == 1:
+        bias = True
+    elif radio_var.get() == 2:
+        bias = False
+    print('hi')
+    print(selectedClass1)
 
 
 def create_label():
     class_label = Label(form, textvariable=label1)
-    label1.set("Select the two features")
+    label1.set("Select the two species")
     class_label.place(x=20, y=30)
 
     feature_label = Label(form, textvariable=label2)
@@ -61,12 +71,11 @@ def create_radio():
 
 
 def create_button():
-    btn = Button(form, text="Run", command = run_single_layer)
+    btn = Button(form, text="Run", command=run_single_layer)
     btn.place(x=190, y=350)
 
 
 def create_spinbox():
-
     spin1 = Spinbox(form, from_=0, to=1, increment=0.1, width=5, textvariable=var1)
     spin1.place(x=120, y=220)
 
@@ -119,94 +128,87 @@ def gui():
     form.mainloop()
 
 
-data = pd.read_csv('penguins.csv')
+def data_preprocessing():
+    data = pd.read_csv('penguins.csv')
 
-# find important columns name which contain  numeric values
-numbers_cols = data.select_dtypes(include=np.number).columns.to_list()
+    # find important columns name which contain  numeric values
+    numbers_cols = data.select_dtypes(include=np.number).columns.to_list()
 
-# find important columns name which contain nun numeric values & convert it's type to string
-non_integer_cols = data.select_dtypes(include=['object']).columns.to_list()
-data[non_integer_cols] = data[non_integer_cols].astype('string')
+    # find important columns name which contain nun numeric values & convert it's type to string
+    non_integer_cols = data.select_dtypes(include=['object']).columns.to_list()
+    data[non_integer_cols] = data[non_integer_cols].astype('string')
 
-# encode species column
-label_encoders = []
-label_encoder = preprocessing.LabelEncoder()
-data['species'] = label_encoder.fit_transform(data['species'])
-label_encoders.append(label_encoder)
+    # encode species column
+    label_encoders = []
+    label_encoder = preprocessing.LabelEncoder()
+    data['species'] = label_encoder.fit_transform(data['species'])
+    label_encoders.append(label_encoder)
 
-# split data based on specie
-Adelie = data.iloc[0:50, :]
-Gentoo = data.iloc[50: 100, :]
-Chinstrap = data.iloc[100: 150, :]
+    # split data based on specie
+    adelie = data.iloc[0:50, :]
+    gentoo = data.iloc[50: 100, :]
+    chinstrap = data.iloc[100: 150, :]
 
-# correct dfs index
-# Gentoo.set_index(pd.Index(range(50)), inplace=True)
-# Chinstrap.set_index(pd.Index(range(50)), inplace=True)
+    nan_val_in_Adelie = {}
+    nan_val_in_Gentoo = {}
+    nan_val_in_Chinstrap = {}
 
-nan_val_in_Adelie = {}
-nan_val_in_Gentoo = {}
-nan_val_in_Chinstrap = {}
+    # find values for 'nan' with median in integer cols & with most repeated value in 'gender' col.
+    # for integer col
+    for col in numbers_cols:
+        nan_val_in_Adelie[col] = adelie[col].median()
+        nan_val_in_Gentoo[col] = gentoo[col].median()
+        nan_val_in_Chinstrap[col] = chinstrap[col].median()
 
-# find values for 'nan' with median in integer cols & with most repeated value in 'gender' col.
-# for integer col
-for col in numbers_cols:
-    nan_val_in_Adelie[col] = Adelie[col].median()
-    nan_val_in_Gentoo[col] = Gentoo[col].median()
-    nan_val_in_Chinstrap[col] = Chinstrap[col].median()
+    # for gender
+    nan_val_in_Adelie['gender'] = adelie['gender'].mode()[0]
+    nan_val_in_Gentoo['gender'] = gentoo['gender'].mode()[0]
+    nan_val_in_Chinstrap['gender'] = chinstrap['gender'].mode()[0]
 
-# for gender
-nan_val_in_Adelie['gender'] = Adelie['gender'].mode()[0]
-nan_val_in_Gentoo['gender'] = Gentoo['gender'].mode()[0]
-nan_val_in_Chinstrap['gender'] = Chinstrap['gender'].mode()[0]
+    # replace nan
+    # in adelie
+    adelie = adelie.fillna(value=nan_val_in_Adelie)
+    # in gentoo
+    gentoo = gentoo.fillna(value=nan_val_in_Gentoo)
+    # in Chinstrap
+    chinstrap = chinstrap.fillna(value=nan_val_in_Chinstrap)
 
-# replace nan
-# in Adelie
-Adelie = Adelie.fillna(value=nan_val_in_Adelie)
-# in Gentoo
-Gentoo = Gentoo.fillna(value=nan_val_in_Gentoo)
-# in Chinstrap
-Chinstrap = Chinstrap.fillna(value=nan_val_in_Chinstrap)
+    # Encoding gender column
+    genders = ['male', 'female']
+    label_encoder = preprocessing.LabelEncoder()
+    label_encoder.fit(genders)
+    adelie[adelie.columns[4]] = label_encoder.transform(adelie['gender'])
+    gentoo[gentoo.columns[4]] = label_encoder.transform(gentoo['gender'])
+    chinstrap[chinstrap.columns[4]] = label_encoder.transform(chinstrap['gender'])
+    label_encoders.append(label_encoder)
 
-# Encoding gender column
-genders = ['male', 'female']
-label_encoder = preprocessing.LabelEncoder()
-label_encoder.fit(genders)
-Adelie[Adelie.columns[4]] = label_encoder.transform(Adelie['gender'])
-Gentoo[Gentoo.columns[4]] = label_encoder.transform(Gentoo['gender'])
-Chinstrap[Chinstrap.columns[4]] = label_encoder.transform(Chinstrap['gender'])
-label_encoders.append(label_encoder)
+    # data shuffling
+    adelie = adelie.sample(frac=1).reset_index(drop=True)
+    gentoo = gentoo.sample(frac=1).reset_index(drop=True)
+    chinstrap = chinstrap.sample(frac=1).reset_index(drop=True)
 
-# data shuffling
-Adelie = Adelie.sample(frac=1).reset_index(drop=True)
-Gentoo = Gentoo.sample(frac=1).reset_index(drop=True)
-Chinstrap = Chinstrap.sample(frac=1).reset_index(drop=True)
+    # split data into train data and test data
+    Adelie_train = adelie.iloc[:30, :]
+    Adelie_test = adelie.iloc[30:, :].reset_index(drop=True)
+    Gentoo_train = gentoo.iloc[:30, :]
+    Gentoo_test = gentoo.iloc[30:, :].reset_index(drop=True)
+    Chinstrap_train = chinstrap.iloc[:30, :]
+    Chinstrap_test = chinstrap.iloc[30:, :].reset_index(drop=True)
 
-# split data into train data and test data
-Adelie_train = Adelie.iloc[:30, :]
-Adelie_test = Adelie.iloc[30:, :].reset_index(drop=True)
-Gentoo_train = Gentoo.iloc[:30, :]
-Gentoo_test = Gentoo.iloc[30:, :].reset_index(drop=True)
-Chinstrap_train = Chinstrap.iloc[:30, :]
-Chinstrap_test = Chinstrap.iloc[30:, :].reset_index(drop=True)
 
+# def user_inputs():
+#     selectedClass1 = data1.get()
+#     selectedClass2 = data2.get()
+#     selectedFeature1 = data3.get()
+#     selectedFeature2 = data4.get()
+#     lR = var1.get()
+#     epochNum = var2.get()
+#     if radio_var.get() == 1:
+#         bias = True
+#     elif radio_var.get() == 2:
+#         bias = False
+
+data_preprocessing()
 gui()
-selectedClass1 = data1.get()
-selectedClass2 = data2.get()
-selectedFeature1 = data3.get()
-selectedFeature2 = data4.get()
-lR = var1.get()
-epochNum = var2.get()
-bias = ''
-if radio_var.get() == 1:
-    bias = True
-elif radio_var.get() == 2:
-    bias = False
 
-# print(selectedClass1)
-# print(selectedClass2)
-# print(selectedFeature1)
-# print(selectedFeature2)
-# print(lR)
-# print(epochNum)
-# print(bias)
-# print(Gentoo_test)
+
