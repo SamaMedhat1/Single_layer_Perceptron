@@ -45,10 +45,6 @@ def user_inputs():
 
 def initialize_Model_Dfs():
     selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias = user_inputs()
-    if use_bias:
-        weights = np.zeros(61)
-    else:
-        weights = np.zeros(60)
 
     # create train & test data based on user selection
     # 1) select species
@@ -84,13 +80,19 @@ def initialize_Model_Dfs():
     # data shuffling
     train_data = train_data.sample(frac=1).reset_index(drop=True)
     test_data = test_data.sample(frac=1).reset_index(drop=True)
-    # add bias
-    train_data.loc[-1] = 0, 0, 0
-    train_data = train_data.sort_index().reset_index(drop=True)
 
     # separate labels
-    train_labels = train_data['species']
-    test_labels = test_data['species']
+    train_labels = train_data.pop('species')
+    test_labels = test_data.pop('species')
+
+    print(train_data)
+    print(train_labels)
+    # weight & bias
+
+    if use_bias:
+        weights = np.random.rand(3)
+    else:
+        weights = np.random.rand(2)
 
     return train_data, train_labels, test_data, test_labels, weights
 
