@@ -27,18 +27,28 @@ feature1 = Combobox(form, width=20, textvariable=data3)
 feature2 = Combobox(form, width=20, textvariable=data4)
 
 
-def run_single_layer():
+def user_inputs():
     selectedClass1 = data1.get()
     selectedClass2 = data2.get()
     selectedFeature1 = data3.get()
     selectedFeature2 = data4.get()
     lR = var1.get()
     epochNum = var2.get()
+    use_bias =True
     if radio_var.get() == 1:
-        bias = True
+        use_bias = True
     elif radio_var.get() == 2:
-        bias = False
+        use_bias = False
 
+    return selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum,use_bias
+
+
+def initialize_Model_Dfs():
+    selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias = user_inputs()
+
+
+def run_single_layer():
+    initialize_Model_Dfs()
 
 
 def create_label():
@@ -128,25 +138,25 @@ def gui():
 
 
 def data_preprocessing():
-    data = pd.read_csv('penguins.csv')
+    dataSet = pd.read_csv('penguins.csv')
 
     # find important columns name which contain  numeric values
-    numbers_cols = data.select_dtypes(include=np.number).columns.to_list()
+    numbers_cols = dataSet.select_dtypes(include=np.number).columns.to_list()
 
     # find important columns name which contain nun numeric values & convert it's type to string
-    non_integer_cols = data.select_dtypes(include=['object']).columns.to_list()
-    data[non_integer_cols] = data[non_integer_cols].astype('string')
+    non_integer_cols = dataSet.select_dtypes(include=['object']).columns.to_list()
+    dataSet[non_integer_cols] = dataSet[non_integer_cols].astype('string')
 
     # encode species column
     label_encoders = []
     label_encoder = preprocessing.LabelEncoder()
-    data['species'] = label_encoder.fit_transform(data['species'])
+    dataSet['species'] = label_encoder.fit_transform(dataSet['species'])
     label_encoders.append(label_encoder)
 
-    # split data based on specie
-    adelie = data.iloc[0:50, :]
-    gentoo = data.iloc[50: 100, :]
-    chinstrap = data.iloc[100: 150, :]
+    # split dataSet based on specie
+    adelie = dataSet.iloc[0:50, :]
+    gentoo = dataSet.iloc[50: 100, :]
+    chinstrap = dataSet.iloc[100: 150, :]
 
     nan_val_in_Adelie = {}
     nan_val_in_Gentoo = {}
@@ -181,12 +191,12 @@ def data_preprocessing():
     chinstrap[chinstrap.columns[4]] = label_encoder.transform(chinstrap['gender'])
     label_encoders.append(label_encoder)
 
-    # data shuffling
+    # dataSet shuffling
     adelie = adelie.sample(frac=1).reset_index(drop=True)
     gentoo = gentoo.sample(frac=1).reset_index(drop=True)
     chinstrap = chinstrap.sample(frac=1).reset_index(drop=True)
 
-    # split data into train data and test data
+    # split dataSet into train dataSet and test dataSet
     Adelie_train = adelie.iloc[:30, :]
     Adelie_test = adelie.iloc[30:, :].reset_index(drop=True)
     Gentoo_train = gentoo.iloc[:30, :]
@@ -194,8 +204,9 @@ def data_preprocessing():
     Chinstrap_train = chinstrap.iloc[:30, :]
     Chinstrap_test = chinstrap.iloc[30:, :].reset_index(drop=True)
 
+    return Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap_test
 
-data_preprocessing()
+
+Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap_test = data_preprocessing()
+
 gui()
-
-
