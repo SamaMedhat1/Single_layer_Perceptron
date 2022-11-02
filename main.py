@@ -27,6 +27,11 @@ feature1 = Combobox(form, width=20, textvariable=data3)
 feature2 = Combobox(form, width=20, textvariable=data4)
 
 
+def run_single_layer():
+    
+
+
+
 def create_label():
     class_label = Label(form, textvariable=label1)
     label1.set("Select the two features")
@@ -56,7 +61,7 @@ def create_radio():
 
 
 def create_button():
-    btn = Button(form, text="Run")
+    btn = Button(form, text="Run", command = run_single_layer)
     btn.place(x=190, y=350)
 
 
