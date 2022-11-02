@@ -79,7 +79,7 @@ def initialize_Model_Dfs():
 
     # 2) keep only selected features
     train_data = train_data[['species', selectedFeature1, selectedFeature2]]
-    test_data = test_data[['species',selectedFeature1, selectedFeature2]]
+    test_data = test_data[['species', selectedFeature1, selectedFeature2]]
 
     # data shuffling
     train_data = train_data.sample(frac=1).reset_index(drop=True)
@@ -91,7 +91,6 @@ def initialize_Model_Dfs():
     # separate labels
     train_labels = train_data['species']
     test_labels = test_data['species']
-
 
     return train_data, train_labels, test_data, test_labels, weights
 
