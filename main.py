@@ -38,8 +38,7 @@ def run_single_layer():
         bias = True
     elif radio_var.get() == 2:
         bias = False
-    print('hi')
-    print(selectedClass1)
+
 
 
 def create_label():
@@ -195,18 +194,6 @@ def data_preprocessing():
     Chinstrap_train = chinstrap.iloc[:30, :]
     Chinstrap_test = chinstrap.iloc[30:, :].reset_index(drop=True)
 
-
-# def user_inputs():
-#     selectedClass1 = data1.get()
-#     selectedClass2 = data2.get()
-#     selectedFeature1 = data3.get()
-#     selectedFeature2 = data4.get()
-#     lR = var1.get()
-#     epochNum = var2.get()
-#     if radio_var.get() == 1:
-#         bias = True
-#     elif radio_var.get() == 2:
-#         bias = False
 
 data_preprocessing()
 gui()
