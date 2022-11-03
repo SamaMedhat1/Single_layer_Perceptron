@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt, pyplot
 from tkinter import *
 from tkinter.ttk import *
 
+
 # GUI
 form = Tk()
 classes = ['Adelie', 'Gentoo', 'Chinstrap']
@@ -286,6 +287,7 @@ def test (TestLabel,test_data,weights):
     testLabel = TestLabel
     row_num = 0
     x0 = 1
+    confusionMatrix = {'Class1T': 0, 'Class1F': 0, 'Class2T': 0, 'Class2F': 0}
     for row in testData:
         if len(weights) > 2:
             row = np.append(row, x0)
@@ -293,9 +295,19 @@ def test (TestLabel,test_data,weights):
         predictedValue = np.sign(net)
         error = testLabel[row_num] - predictedValue
         if error == 0:
+            if testLabel[row_num] == 1:
+                confusionMatrix['Class1T'] += 1
+            else:
+                confusionMatrix['Class2T'] += 1
             score = score+1
+        else:
+            if predictedValue == 1:
+                confusionMatrix['Class2F'] += 1
+            else:
+                confusionMatrix['Class1F'] += 1
     accuracy = (score/testData)*100
     print("accuracy:", accuracy, "and the score: ", score)
+    print("confusion Matrix : ", confusionMatrix)
 
     return accuracy
 def testSample (weight,SampleX):
@@ -305,8 +317,6 @@ def testSample (weight,SampleX):
     predictedValue_y = np.sign(net)
     print("the ClassID :", predictedValue_y)
     return 0
-
-
 # bias = 1
 # rowNum = 0
 # while epochnum:
