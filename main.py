@@ -309,7 +309,7 @@ def test (TestLabel,test_data,weights):
     print("accuracy:", accuracy, "and the score: ", score)
     print("confusion Matrix : ", confusionMatrix)
 
-    return accuracy
+    return 0
 def testSample (weight,SampleX):
     SampleX = 10
     transpose_weight = weight.transpose()
