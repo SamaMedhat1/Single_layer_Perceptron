@@ -280,6 +280,31 @@ def data_preprocessing():
 Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap_test = data_preprocessing()
 
 gui()
+def test (TestLabel,test_data,weights):
+    testData = test_data.to_numpy()
+    transpose_weight = weights.transpose()
+    testLabel = TestLabel
+    row_num = 0
+    x0 = 1
+    for row in testData:
+        if len(weights) > 2:
+            row = np.append(row, x0)
+        net = np.dot(row, transpose_weight)
+        predictedValue = np.sign(net)
+        error = testLabel[row_num] - predictedValue
+        if error == 0:
+            score = score+1
+    accuracy = (score/testData)*100
+    print("accuracy:", accuracy, "and the score: ", score)
+
+    return accuracy
+def testSample (weight,SampleX):
+    transpose_weight = weight.transpose()
+    net = np.dot(SampleX, transpose_weight)
+    predictedValue_y = np.sign(net)
+    print("the ClassID :", predictedValue_y)
+    return 0
+
 
 # bias = 1
 # rowNum = 0
