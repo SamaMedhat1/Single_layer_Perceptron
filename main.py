@@ -299,6 +299,7 @@ def test (TestLabel,test_data,weights):
 
     return accuracy
 def testSample (weight,SampleX):
+    SampleX = 10
     transpose_weight = weight.transpose()
     net = np.dot(SampleX, transpose_weight)
     predictedValue_y = np.sign(net)
