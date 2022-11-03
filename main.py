@@ -40,7 +40,7 @@ def user_inputs():
     elif radio_var.get() == 2:
         use_bias = False
 
-    return selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum,use_bias
+    return selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias
 
 
 def initialize_Model_Dfs():
@@ -77,6 +77,11 @@ def initialize_Model_Dfs():
     train_data = train_data[['species', selectedFeature1, selectedFeature2]]
     test_data = test_data[['species', selectedFeature1, selectedFeature2]]
 
+    # encode species column
+    label_encoder = preprocessing.LabelEncoder()
+    train_data['species'] = label_encoder.fit_transform(train_data['species'])
+    test_data['species'] = label_encoder.transform(test_data['species'])
+
     # data shuffling
     train_data = train_data.sample(frac=1).reset_index(drop=True)
     test_data = test_data.sample(frac=1).reset_index(drop=True)
@@ -85,8 +90,6 @@ def initialize_Model_Dfs():
     train_labels = train_data.pop('species')
     test_labels = test_data.pop('species')
 
-    # print(train_data)
-    # print(train_labels)
     # weight & bias
 
     if use_bias:
@@ -99,34 +102,30 @@ def initialize_Model_Dfs():
 
 def run():
     train_data, train_labels, test_data, test_labels, weights, epochNum, lr = initialize_Model_Dfs()
-    run_single_layer(train_data,train_labels,weights,epochNum,lr)
+    run_single_layer(train_data, train_labels, weights, epochNum, lr)
 
 
-def run_single_layer(train_data,train_label,weights,epochnum,lr):
+def run_single_layer(train_data, train_label, weights, epochNum, lr):
     trainData = train_data.to_numpy()
-    trainlabel=train_label
-    transpose_weight =weights.transpose()
+    trainLabel = train_label
+    transpose_weight = weights.transpose()
     bias = 1
     row_num = 0
-    for row in trainData:
-        if len(weights) > 2:
-            row = np.append(row,bias)
-        net = np.dot(row,transpose_weight)
-        predictedValue = np.sign(net)
-        error = trainlabel[row_num] - predictedValue
-        if error != 0:
-           update_weight(transpose_weight, lr, row, error)
-        row += 1
+    while epochNum:
+        for row in trainData:
+            if len(weights) > 2:
+                row = np.append(row, bias)
+            net = np.dot(row, transpose_weight)
+            predictedValue = np.sign(net)
+            error = trainLabel[row_num] - predictedValue
+            if error != 0:
+                update_weight(transpose_weight, lr, row, error)
+            row += 1
 
 
-def update_weight(weight_matrix,l_rate,row,error_value):
+def update_weight(weight_matrix, l_rate, row, error_value):
     for index in range(len(weight_matrix)):
-        weight_matrix[index]= weight_matrix[index] +l_rate *error_value* row[index]
-
-
-
-
-
+        weight_matrix[index] = weight_matrix[index] + l_rate * error_value * row[index]
 
 
 def create_label():
@@ -225,12 +224,6 @@ def data_preprocessing():
     non_integer_cols = dataSet.select_dtypes(include=['object']).columns.to_list()
     dataSet[non_integer_cols] = dataSet[non_integer_cols].astype('string')
 
-    # encode species column
-    label_encoders = []
-    label_encoder = preprocessing.LabelEncoder()
-    dataSet['species'] = label_encoder.fit_transform(dataSet['species'])
-    label_encoders.append(label_encoder)
-
     # split dataSet based on specie
     adelie = dataSet.iloc[0:50, :]
     gentoo = dataSet.iloc[50: 100, :]
@@ -267,7 +260,6 @@ def data_preprocessing():
     adelie[adelie.columns[4]] = label_encoder.transform(adelie['gender'])
     gentoo[gentoo.columns[4]] = label_encoder.transform(gentoo['gender'])
     chinstrap[chinstrap.columns[4]] = label_encoder.transform(chinstrap['gender'])
-    label_encoders.append(label_encoder)
 
     # dataSet shuffling
     adelie = adelie.sample(frac=1).reset_index(drop=True)
