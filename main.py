@@ -85,8 +85,8 @@ def initialize_Model_Dfs():
     train_labels = train_data.pop('species')
     test_labels = test_data.pop('species')
 
-    print(train_data)
-    print(train_labels)
+    # print(train_data)
+    # print(train_labels)
     # weight & bias
 
     if use_bias:
@@ -94,11 +94,39 @@ def initialize_Model_Dfs():
     else:
         weights = np.random.rand(2)
 
-    return train_data, train_labels, test_data, test_labels, weights
+    return train_data, train_labels, test_data, test_labels, weights, epochNum, lR
 
 
-def run_single_layer():
-    train_data, train_labels, test_data, test_labels, weights = initialize_Model_Dfs()
+def run():
+    train_data, train_labels, test_data, test_labels, weights, epochNum, lr = initialize_Model_Dfs()
+    run_single_layer(train_data,train_labels,weights,epochNum,lr)
+
+
+def run_single_layer(train_data,train_label,weights,epochnum,lr):
+    trainData = train_data.to_numpy()
+    trainlabel=train_label
+    transpose_weight =weights.transpose()
+    bias = 1
+    row_num = 0
+    for row in trainData:
+        if len(weights) > 2:
+            row = np.append(row,bias)
+        net = np.dot(row,transpose_weight)
+        predictedValue = np.sign(net)
+        error = trainlabel[row_num] - predictedValue
+        if error != 0:
+           update_weight(transpose_weight, lr, row, error)
+        row += 1
+
+
+def update_weight(weight_matrix,l_rate,row,error_value):
+    for index in range(len(weight_matrix)):
+        weight_matrix[index]= weight_matrix[index] +l_rate *error_value* row[index]
+
+
+
+
+
 
 
 def create_label():
@@ -130,7 +158,7 @@ def create_radio():
 
 
 def create_button():
-    btn = Button(form, text="Run", command=run_single_layer)
+    btn = Button(form, text="Run", command=run)
     btn.place(x=190, y=350)
 
 
@@ -260,3 +288,18 @@ def data_preprocessing():
 Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap_test = data_preprocessing()
 
 gui()
+
+# bias = 1
+# rowNum = 0
+# while epochnum:
+#     for index in range(len(train_data)):
+#         i = 0
+#         net = 0
+#         for i in range(3):
+#             net += train_data[*weights[i]
+#             i+=1
+#         if use_bias:
+#            net += bias * weights[i]
+#
+#     rowNum += 1
+#     epochnum -= 1;
