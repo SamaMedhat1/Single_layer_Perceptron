@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt, pyplot
 from tkinter import *
 from tkinter.ttk import *
 
-
 # GUI
 form = Tk()
 classes = ['Adelie', 'Gentoo', 'Chinstrap']
@@ -103,31 +102,78 @@ def initialize_Model_Dfs():
 
 def run():
     train_data, train_labels, test_data, test_labels, weights, epochNum, lr = initialize_Model_Dfs()
-    run_single_layer(train_data, train_labels, weights, epochNum, lr)
+    weights = run_single_layer(train_data, train_labels, weights, epochNum, lr)
+    test(test_labels, test_data, weights)
 
 
-def run_single_layer(train_data, train_label, weights, epochNum, lr):
+def testSample(weight, sample_x):
+    sample_x = 10
+    transpose_weight = weight.transpose()
+    net = np.dot(sample_x, transpose_weight)
+    predictedValue_y = np.sign(net)
+    print("the ClassID :", predictedValue_y)
+    return 0
+
+
+def test(test_label, test_data, weights):
+    testData = test_data.to_numpy()
+    transpose_weight = weights.transpose()
+    test_label = test_label
+    row_num = 0
+    x0 = 1
+    score = 0
+    confusionMatrix = {'Class1T': 0, 'Class1F': 0, 'Class2T': 0, 'Class2F': 0}
+    for row in testData:
+        if len(weights) > 2:
+            row = np.append(row, x0)
+        net = np.dot(row, transpose_weight)
+        predictedValue = int(net > 0)
+        error = test_label[row_num] - predictedValue
+        if error == 0:
+            if test_label[row_num] == 1:
+                confusionMatrix['Class1T'] += 1
+            else:
+                confusionMatrix['Class2T'] += 1
+            score = score + 1
+        else:
+            if predictedValue == 1:
+                confusionMatrix['Class2F'] += 1
+            else:
+                confusionMatrix['Class1F'] += 1
+    accuracy = (score / 40.0) * 100
+    print("accuracy:", accuracy, "and the score: ", score)
+    print("confusion Matrix : ", confusionMatrix)
+
+    return 0
+
+
+def run_single_layer(train_data, train_label, weights, epoch_num, lr):
     trainData = train_data.to_numpy()
     trainLabel = train_label
     transpose_weight = weights.transpose()
     bias = 1
-    row_num = 0
-    while epochNum:
+    print(trainLabel)
+    while epoch_num:
+        epoch_num -= 1
+        row_num = 0
+        print(weights)
         for row in trainData:
             if len(weights) > 2:
                 row = np.append(row, bias)
             net = np.dot(row, transpose_weight)
-            predictedValue = np.sign(net)
+            predictedValue = int(net > 0)
             error = trainLabel[row_num] - predictedValue
+            print(predictedValue, trainLabel[row_num], row_num)
             if error != 0:
-                update_weight(transpose_weight, lr, row, error)
-            row += 1
+               weights = update_weight(transpose_weight, lr, row, error)
+            row_num += 1
+    return weights
 
 
 def update_weight(weight_matrix, l_rate, row, error_value):
     for index in range(len(weight_matrix)):
         weight_matrix[index] = weight_matrix[index] + l_rate * error_value * row[index]
-
+    return weight_matrix
 
 def create_label():
     class_label = Label(form, textvariable=label1)
@@ -281,42 +327,8 @@ def data_preprocessing():
 Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap_test = data_preprocessing()
 
 gui()
-def test (TestLabel,test_data,weights):
-    testData = test_data.to_numpy()
-    transpose_weight = weights.transpose()
-    testLabel = TestLabel
-    row_num = 0
-    x0 = 1
-    confusionMatrix = {'Class1T': 0, 'Class1F': 0, 'Class2T': 0, 'Class2F': 0}
-    for row in testData:
-        if len(weights) > 2:
-            row = np.append(row, x0)
-        net = np.dot(row, transpose_weight)
-        predictedValue = np.sign(net)
-        error = testLabel[row_num] - predictedValue
-        if error == 0:
-            if testLabel[row_num] == 1:
-                confusionMatrix['Class1T'] += 1
-            else:
-                confusionMatrix['Class2T'] += 1
-            score = score+1
-        else:
-            if predictedValue == 1:
-                confusionMatrix['Class2F'] += 1
-            else:
-                confusionMatrix['Class1F'] += 1
-    accuracy = (score/testData)*100
-    print("accuracy:", accuracy, "and the score: ", score)
-    print("confusion Matrix : ", confusionMatrix)
 
-    return 0
-def testSample (weight,SampleX):
-    SampleX = 10
-    transpose_weight = weight.transpose()
-    net = np.dot(SampleX, transpose_weight)
-    predictedValue_y = np.sign(net)
-    print("the ClassID :", predictedValue_y)
-    return 0
+
 # bias = 1
 # rowNum = 0
 # while epochnum:
