@@ -28,7 +28,7 @@ class2 = Combobox(form, width=20, textvariable=data2)
 feature1 = Combobox(form, width=20, textvariable=data3)
 feature2 = Combobox(form, width=20, textvariable=data4)
 
-
+#take user values
 def user_inputs():
     selectedClass1 = data1.get()
     selectedClass2 = data2.get()
@@ -116,7 +116,7 @@ def signum(num):
     # return 1 if num >0 else 0
     return int(num > 0)
 
-
+#test sample
 def testSample(weights, sample, label_encoder):
     # add bias if exist
     if len(weights) > 2:
@@ -127,7 +127,7 @@ def testSample(weights, sample, label_encoder):
     print("the ClassID :", label_encoder.inverse_transform(predictedValue_y))
     return 0
 
-
+#test test data, print accuracy and confusionMatrix
 def test(test_label, test_data, weights):
     testData = test_data.to_numpy()
     transpose_weight = weights.transpose()
@@ -161,10 +161,12 @@ def test(test_label, test_data, weights):
 
     return 0
 
-
+#single_layer_Perceptron function (train function)
 def run_single_layer(train_data, train_label, weights, epoch_num, lr):
+    #convert data frame to numpy
     trainData = train_data.to_numpy()
     trainLabel = train_label
+    #transpose weight list for dot product
     transpose_weight = weights.transpose()
     bias = 1
     while epoch_num:
@@ -172,11 +174,14 @@ def run_single_layer(train_data, train_label, weights, epoch_num, lr):
         row_num = 0
         score = 0
         for row in trainData:
+            # in case bias add bias value in feature list
             if len(weights) > 2:
                 row = np.append(row, bias)
             net = np.dot(row, transpose_weight)
             predictedValue = signum(net)
             error = abs(trainLabel[row_num] - predictedValue)
+
+            # if error occurs call update_weight function
             if error != 0:
                weights = update_weight(transpose_weight, lr, row, error)
             else:
@@ -186,12 +191,14 @@ def run_single_layer(train_data, train_label, weights, epoch_num, lr):
     return weights
 
 
+# update weights when an error occurs (call by single_layer_Perceptron function)
 def update_weight(weight_matrix, l_rate, row, error_value):
     for index in range(len(weight_matrix)):
         weight_matrix[index] = weight_matrix[index] + l_rate * error_value * row[index]
     return weight_matrix
 
 
+# create labels in gui
 def create_label():
     class_label = Label(form, textvariable=label1)
     label1.set("Select the two species")
@@ -209,7 +216,7 @@ def create_label():
     label5.set("epochs number")
     epoch_label.place(x=250, y=220)
 
-
+#create Radio buttons in gui
 def create_radio():
     r1 = Radiobutton(form, text="bias", width=120, variable=radio_var, value=1)
     r1.pack(anchor=W)
@@ -219,12 +226,12 @@ def create_radio():
     r2.pack(anchor=W)
     r2.place(x=300, y=290)
 
-
+#create  run_button in gui
 def create_button():
     btn = Button(form, text="Run", command=run)
     btn.place(x=190, y=350)
 
-
+#create spinbox in gui
 def create_spinbox():
     spin1 = Spinbox(form, from_=0, to=1, increment=0.1, width=5, textvariable=var1)
     spin1.place(x=120, y=220)
@@ -232,7 +239,7 @@ def create_spinbox():
     spin2 = Spinbox(form, from_=1, to=100, width=5, textvariable=var2)
     spin2.place(x=350, y=220)
 
-
+# creat combobox in gui
 def create_combo():
     class1['values'] = classes
     class1.grid(column=1, row=3)
@@ -346,17 +353,4 @@ Adelie_train, Adelie_test, Gentoo_train, Gentoo_test, Chinstrap_train, Chinstrap
 gui()
 
 
-# bias = 1
-# rowNum = 0
-# while epochnum:
-#     for index in range(len(train_data)):
-#         i = 0
-#         net = 0
-#         for i in range(3):
-#             net += train_data[*weights[i]
-#             i+=1
-#         if use_bias:
-#            net += bias * weights[i]
-#
-#     rowNum += 1
-#     epochnum -= 1;
+
