@@ -27,27 +27,40 @@ class1 = Combobox(form, width=20, textvariable=data1)
 class2 = Combobox(form, width=20, textvariable=data2)
 feature1 = Combobox(form, width=20, textvariable=data3)
 feature2 = Combobox(form, width=20, textvariable=data4)
+selectedClass1 = ''
+selectedClass2 = ''
+selectedFeature1 = ''
+selectedFeature2 = ''
+lR = ''
+epoch_num = ''
+use_bias = True
+train_data = []
+train_labels = []
+test_data = []
+test_labels = []
+weights = []
+encodes = {}
 
-#take user values
+
+# take user values
 def user_inputs():
+    global selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epoch_num, use_bias
     selectedClass1 = data1.get()
     selectedClass2 = data2.get()
     selectedFeature1 = data3.get()
     selectedFeature2 = data4.get()
     lR = var1.get()
-    epochNum = var2.get()
+    epoch_num = var2.get()
     use_bias = True
     if radio_var.get() == 1:
         use_bias = True
     elif radio_var.get() == 2:
         use_bias = False
 
-    return selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias
-
 
 def initialize_Model_Dfs():
-    selectedClass1, selectedClass2, selectedFeature1, selectedFeature2, lR, epochNum, use_bias = user_inputs()
-
+    user_inputs()
+    global train_data, train_labels, test_data, test_labels, weights, encodes
     # create train & test data based on user selection
     # 1) select species
     train_frames = []
@@ -80,10 +93,9 @@ def initialize_Model_Dfs():
     test_data = test_data[['species', selectedFeature1, selectedFeature2]]
 
     # encode species column
-    label_encoder = preprocessing.LabelEncoder()
-    train_data['species'] = label_encoder.fit_transform(train_data['species'])
-    test_data['species'] = label_encoder.transform(test_data['species'])
-
+    encodes = {1: selectedClass1, -1: selectedClass2}
+    train_data['species'].replace(to_replace=[selectedClass1, selectedClass2], value=['1', '-1'], inplace=True)
+    test_data['species'].replace(to_replace=[selectedClass1, selectedClass2], value=['1', '-1'], inplace=True)
     # data shuffling
     train_data = train_data.sample(frac=1).reset_index(drop=True)
     test_data = test_data.sample(frac=1).reset_index(drop=True)
@@ -99,39 +111,63 @@ def initialize_Model_Dfs():
     else:
         weights = np.random.rand(2)
 
-    return train_data, train_labels, test_data, test_labels, weights, epochNum, lR, label_encoder
+
+# single_layer_Perceptron function (train function)
+def run_single_layer():
+    global weights, train_labels, train_data, epoch_num
+    # convert data frame to numpy
+    trainData = train_data.to_numpy()
+    trainLabel = train_labels
+    # transpose weight list for dot product
+    transpose_weight = weights.transpose()
+    bias = 1
+    while epoch_num:
+        row_num = 0
+        score = 0
+        for row in trainData:
+            # in case bias add bias value in feature list
+            if len(weights) > 2:
+                row = np.append(row, bias)
+            net = np.dot(row, transpose_weight)
+            predictedValue = signum(net)
+            error = int(trainLabel[row_num]) - predictedValue
+
+            # if error occurs call update_weight function
+            if error != 0:
+                weights = update_weight(transpose_weight, row, error)
+            else:
+                score += 1
+            row_num += 1
+        print('epoch ', epoch_num, 'accuracy :', (score / 60.0) * 100)
+        epoch_num -= 1
 
 
-def run():
-    train_data, train_labels, test_data, test_labels, weights, epochNum, lr, label_encoder = initialize_Model_Dfs()
-    weights = run_single_layer(train_data, train_labels, weights, epochNum, lr)
-    test(test_labels, test_data, weights)
-    # bill_depth_mm & flipper_length_mm for gentoo sample
-    sample = [13.5, 210]
-    testSample(weights, np.array(sample), label_encoder)
+# update weights when an error occurs (call by single_layer_Perceptron function)
+def update_weight(weight_matrix, row, error_value):
+    global lR
+    for index in range(len(weight_matrix)):
+        weight_matrix[index] = weight_matrix[index] + lR * error_value * row[index]
+    return weight_matrix
 
 
-# signum activation function
-def signum(num):
-    # return 1 if num >0 else 0
-    return int(num > 0)
-
-#test sample
-def testSample(weights, sample, label_encoder):
+# test sample
+def testSample(sample):
+    global weights, encodes
     # add bias if exist
     if len(weights) > 2:
         sample = np.append(sample, 1)
     transpose_weight = weights.transpose()
     net = np.dot(transpose_weight, sample)
     predictedValue_y = signum(net)
-    print("the ClassID :", label_encoder.inverse_transform(predictedValue_y))
-    return 0
+    print("the ClassID :", encodes[predictedValue_y])
 
-#test test data, print accuracy and confusionMatrix
-def test(test_label, test_data, weights):
+
+# test test data, print accuracy and confusionMatrix
+def test():
+    global test_labels, test_data, weights
     testData = test_data.to_numpy()
     transpose_weight = weights.transpose()
-    test_label = test_label
+    test_label = test_labels
     row_num = 0
     x0 = 1
     score = 0
@@ -142,15 +178,15 @@ def test(test_label, test_data, weights):
             row = np.append(row, x0)
         net = np.dot(row, transpose_weight)
         predictedValue = signum(net)
-        error = abs(test_label[row_num] - predictedValue)
+        error = int(test_labels[row_num]) - predictedValue
         if error == 0:
-            if test_label[row_num] == 1:
+            if test_labels[row_num] == '1':
                 confusionMatrix['Class1T'] += 1
             else:
                 confusionMatrix['Class2T'] += 1
             score = score + 1
         else:
-            if predictedValue == 1:
+            if predictedValue == '1':
                 confusionMatrix['Class2F'] += 1
             else:
                 confusionMatrix['Class1F'] += 1
@@ -161,41 +197,51 @@ def test(test_label, test_data, weights):
 
     return 0
 
-#single_layer_Perceptron function (train function)
-def run_single_layer(train_data, train_label, weights, epoch_num, lr):
-    #convert data frame to numpy
-    trainData = train_data.to_numpy()
-    trainLabel = train_label
-    #transpose weight list for dot product
-    transpose_weight = weights.transpose()
-    bias = 1
-    while epoch_num:
-        epoch_num -= 1
-        row_num = 0
-        score = 0
-        for row in trainData:
-            # in case bias add bias value in feature list
-            if len(weights) > 2:
-                row = np.append(row, bias)
-            net = np.dot(row, transpose_weight)
-            predictedValue = signum(net)
-            error = abs(trainLabel[row_num] - predictedValue)
 
-            # if error occurs call update_weight function
-            if error != 0:
-               weights = update_weight(transpose_weight, lr, row, error)
-            else:
-                score += 1
-            row_num += 1
-        print(weights, (score / 40.0) * 100)
-    return weights
+def decision_boundry():
+    min_feature1 = min(train_data[selectedFeature1])
+    max_feature1 = max(train_data[selectedFeature1])
+    y1 = ((weights[2] * -1) - (min_feature1 * weights[0])) / weights[1]
+    y2 = ((weights[2] * -1) - (max_feature1 * weights[0])) / weights[1]
+    x = [min_feature1, max_feature1]
+    y = [y1, y2]
+
+    figureName = 'decision_boundry'
+    plt.figure(figureName)
+
+    if selectedClass1 == 'Adelie' or selectedClass2 == 'Adelie':
+        specie1 = plt.scatter(Adelie_train[selectedFeature1], Adelie_train[selectedFeature2])
+    if selectedClass1 == 'Gentoo' or selectedClass2 == 'Gentoo':
+        specie2 = plt.scatter(Gentoo_train[selectedFeature1], Gentoo_train[selectedFeature2])
+    if selectedClass1 == 'Chinstrap' or selectedClass2 == 'Chinstrap':
+        specie3 = plt.scatter(Chinstrap_train[selectedFeature1], Chinstrap_train[selectedFeature2])
+
+    plt.xlabel(selectedFeature1)
+    plt.ylabel(selectedFeature2)
+    plt.legend((selectedClass1, selectedClass2),
+               scatterpoints=1,
+               fontsize=8
+               )
+    plt.plot(x,y)
+    plt.show()
 
 
-# update weights when an error occurs (call by single_layer_Perceptron function)
-def update_weight(weight_matrix, l_rate, row, error_value):
-    for index in range(len(weight_matrix)):
-        weight_matrix[index] = weight_matrix[index] + l_rate * error_value * row[index]
-    return weight_matrix
+def run():
+    initialize_Model_Dfs()
+    run_single_layer()
+    test()
+    # bill_depth_mm & flipper_length_mm for gentoo sample
+    sample = [42, 13.5]
+    testSample(np.array(sample))
+    decision_boundry()
+
+
+# signum activation function
+def signum(num):
+    if num > 0:
+        return 1
+    else:
+        return -1
 
 
 # create labels in gui
@@ -216,7 +262,8 @@ def create_label():
     label5.set("epochs number")
     epoch_label.place(x=250, y=220)
 
-#create Radio buttons in gui
+
+# create Radio buttons in gui
 def create_radio():
     r1 = Radiobutton(form, text="bias", width=120, variable=radio_var, value=1)
     r1.pack(anchor=W)
@@ -226,20 +273,23 @@ def create_radio():
     r2.pack(anchor=W)
     r2.place(x=300, y=290)
 
-#create  run_button in gui
+
+# create  run_button in gui
 def create_button():
     btn = Button(form, text="Run", command=run)
     btn.place(x=190, y=350)
 
-#create spinbox in gui
+
+# create spinbox in gui
 def create_spinbox():
     spin1 = Spinbox(form, from_=0, to=1, increment=0.1, width=5, textvariable=var1)
     spin1.place(x=120, y=220)
 
-    spin2 = Spinbox(form, from_=1, to=100, width=5, textvariable=var2)
+    spin2 = Spinbox(form, from_=1, to=5000, width=5, textvariable=var2)
     spin2.place(x=350, y=220)
 
-# creat combobox in gui
+
+# create combobox in gui
 def create_combo():
     class1['values'] = classes
     class1.grid(column=1, row=3)
