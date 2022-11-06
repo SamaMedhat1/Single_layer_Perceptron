@@ -1,3 +1,5 @@
+from operator import abs
+
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
@@ -97,21 +99,32 @@ def initialize_Model_Dfs():
     else:
         weights = np.random.rand(2)
 
-    return train_data, train_labels, test_data, test_labels, weights, epochNum, lR
+    return train_data, train_labels, test_data, test_labels, weights, epochNum, lR, label_encoder
 
 
 def run():
-    train_data, train_labels, test_data, test_labels, weights, epochNum, lr = initialize_Model_Dfs()
+    train_data, train_labels, test_data, test_labels, weights, epochNum, lr, label_encoder = initialize_Model_Dfs()
     weights = run_single_layer(train_data, train_labels, weights, epochNum, lr)
     test(test_labels, test_data, weights)
+    # bill_depth_mm & flipper_length_mm for gentoo sample
+    sample = [13.5, 210]
+    testSample(weights, np.array(sample), label_encoder)
 
 
-def testSample(weight, sample_x):
-    sample_x = 10
-    transpose_weight = weight.transpose()
-    net = np.dot(sample_x, transpose_weight)
-    predictedValue_y = np.sign(net)
-    print("the ClassID :", predictedValue_y)
+# signum activation function
+def signum(num):
+    # return 1 if num >0 else 0
+    return int(num > 0)
+
+
+def testSample(weights, sample, label_encoder):
+    # add bias if exist
+    if len(weights) > 2:
+        sample = np.append(sample, 1)
+    transpose_weight = weights.transpose()
+    net = np.dot(transpose_weight, sample)
+    predictedValue_y = signum(net)
+    print("the ClassID :", label_encoder.inverse_transform(predictedValue_y))
     return 0
 
 
@@ -124,11 +137,12 @@ def test(test_label, test_data, weights):
     score = 0
     confusionMatrix = {'Class1T': 0, 'Class1F': 0, 'Class2T': 0, 'Class2F': 0}
     for row in testData:
+        # add bias if exist
         if len(weights) > 2:
             row = np.append(row, x0)
         net = np.dot(row, transpose_weight)
-        predictedValue = int(net > 0)
-        error = test_label[row_num] - predictedValue
+        predictedValue = signum(net)
+        error = abs(test_label[row_num] - predictedValue)
         if error == 0:
             if test_label[row_num] == 1:
                 confusionMatrix['Class1T'] += 1
@@ -140,6 +154,7 @@ def test(test_label, test_data, weights):
                 confusionMatrix['Class2F'] += 1
             else:
                 confusionMatrix['Class1F'] += 1
+        row_num += 1
     accuracy = (score / 40.0) * 100
     print("accuracy:", accuracy, "and the score: ", score)
     print("confusion Matrix : ", confusionMatrix)
@@ -152,21 +167,22 @@ def run_single_layer(train_data, train_label, weights, epoch_num, lr):
     trainLabel = train_label
     transpose_weight = weights.transpose()
     bias = 1
-    print(trainLabel)
     while epoch_num:
         epoch_num -= 1
         row_num = 0
-        print(weights)
+        score = 0
         for row in trainData:
             if len(weights) > 2:
                 row = np.append(row, bias)
             net = np.dot(row, transpose_weight)
-            predictedValue = int(net > 0)
-            error = trainLabel[row_num] - predictedValue
-            print(predictedValue, trainLabel[row_num], row_num)
+            predictedValue = signum(net)
+            error = abs(trainLabel[row_num] - predictedValue)
             if error != 0:
                weights = update_weight(transpose_weight, lr, row, error)
+            else:
+                score += 1
             row_num += 1
+        print(weights, (score / 40.0) * 100)
     return weights
 
 
@@ -174,6 +190,7 @@ def update_weight(weight_matrix, l_rate, row, error_value):
     for index in range(len(weight_matrix)):
         weight_matrix[index] = weight_matrix[index] + l_rate * error_value * row[index]
     return weight_matrix
+
 
 def create_label():
     class_label = Label(form, textvariable=label1)
