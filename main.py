@@ -157,6 +157,8 @@ def testSample(sample):
     if len(weights) > 2:
         sample = np.append(sample, 1)
     transpose_weight = weights.transpose()
+
+    # calculate predicted y
     net = np.dot(transpose_weight, sample)
     predictedValue_y = signum(net)
     print("the ClassID :", encodes[predictedValue_y])
@@ -176,15 +178,23 @@ def test():
         # add bias if exist
         if len(weights) > 2:
             row = np.append(row, x0)
+
+        # calculate predicted y
         net = np.dot(row, transpose_weight)
         predictedValue = signum(net)
         error = int(test_labels[row_num]) - predictedValue
+
+        # updated confusion matrix
+        # if false prediction
         if error == 0:
+            # if sample was from class 1
             if test_labels[row_num] == '1':
                 confusionMatrix['Class1T'] += 1
+            # if sample was from class 2
             else:
                 confusionMatrix['Class2T'] += 1
             score = score + 1
+        # if correct prediction
         else:
             if predictedValue == '1':
                 confusionMatrix['Class2F'] += 1
@@ -195,34 +205,41 @@ def test():
     print("accuracy:", accuracy, "and the score: ", score)
     print("confusion Matrix : ", confusionMatrix)
 
-    return 0
-
 
 def decision_boundry():
+    # find X & Y for line
+    # X1 & X2 are min and max value in feature 1
     min_feature1 = min(train_data[selectedFeature1])
     max_feature1 = max(train_data[selectedFeature1])
+
+    # calculate Y1& Y2 from line eq: W0X1 + W1X2 +W2 = 0
     y1 = ((weights[2] * -1) - (min_feature1 * weights[0])) / weights[1]
     y2 = ((weights[2] * -1) - (max_feature1 * weights[0])) / weights[1]
     x = [min_feature1, max_feature1]
     y = [y1, y2]
+    plt.plot(x, y)
 
+    # create the figure
     figureName = 'decision_boundry'
     plt.figure(figureName)
 
+    # plot training data as a scatter
     if selectedClass1 == 'Adelie' or selectedClass2 == 'Adelie':
-        specie1 = plt.scatter(Adelie_train[selectedFeature1], Adelie_train[selectedFeature2])
+        plt.scatter(Adelie_train[selectedFeature1], Adelie_train[selectedFeature2])
     if selectedClass1 == 'Gentoo' or selectedClass2 == 'Gentoo':
-        specie2 = plt.scatter(Gentoo_train[selectedFeature1], Gentoo_train[selectedFeature2])
+        plt.scatter(Gentoo_train[selectedFeature1], Gentoo_train[selectedFeature2])
     if selectedClass1 == 'Chinstrap' or selectedClass2 == 'Chinstrap':
-        specie3 = plt.scatter(Chinstrap_train[selectedFeature1], Chinstrap_train[selectedFeature2])
+        plt.scatter(Chinstrap_train[selectedFeature1], Chinstrap_train[selectedFeature2])
 
+    # add x & y axes labels
     plt.xlabel(selectedFeature1)
     plt.ylabel(selectedFeature2)
+
+    # add plot legend for classes
     plt.legend((selectedClass1, selectedClass2),
                scatterpoints=1,
                fontsize=8
                )
-    plt.plot(x,y)
     plt.show()
 
 
