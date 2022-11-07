@@ -210,8 +210,8 @@ def test():
 def decision_boundry():
     # find X & Y for line
     # X1 & X2 are min and max value in feature 1
-    min_feature1 = min(train_data[selectedFeature1])
-    max_feature1 = max(train_data[selectedFeature1])
+    min_feature1 = min(test_data[selectedFeature1])
+    max_feature1 = max(test_data[selectedFeature1])
 
     # calculate Y1& Y2 from line eq: W0X1 + W1X2 +W2 = 0
     # if there is bias
@@ -309,7 +309,7 @@ def create_spinbox():
     spin1 = Spinbox(form, from_=0, to=1, increment=0.1, width=5, textvariable=var1)
     spin1.place(x=120, y=220)
 
-    spin2 = Spinbox(form, from_=1, to=5000, width=5, textvariable=var2)
+    spin2 = Spinbox(form, from_=1, to=5000,increment=10, width=5, textvariable=var2)
     spin2.place(x=350, y=220)
 
 
