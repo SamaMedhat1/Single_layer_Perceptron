@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, pyplot
 from tkinter import *
 from tkinter.ttk import *
 
-# GUI
+
 form = Tk()
 classes = ['Adelie', 'Gentoo', 'Chinstrap']
 features = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'gender', 'body_mass_g']
@@ -22,6 +22,7 @@ label5 = StringVar()
 var1 = DoubleVar()
 var2 = IntVar()
 radio_var = IntVar()
+#combobox
 class1 = Combobox(form, width=20, textvariable=data1)
 class2 = Combobox(form, width=20, textvariable=data2)
 feature1 = Combobox(form, width=20, textvariable=data3)
@@ -131,12 +132,13 @@ def run_single_layer():
             predictedValue = signum(net)
             error = int(trainLabel[row_num]) - predictedValue
 
-            # if error occurs call update_weight function
+            # if error occurs call update_weight function to update weights
             if error != 0:
                 weights = update_weight(transpose_weight, row, error)
             else:
                 score += 1
             row_num += 1
+            # print train accuracy
         print('epoch ', epoch_num, 'accuracy :', (score / 60.0) * 100)
         epoch_num -= 1
 
@@ -163,7 +165,7 @@ def testSample(sample):
     print("the ClassID :", encodes[predictedValue_y])
 
 
-# test test data, print accuracy and confusionMatrix
+# test data, print accuracy and confusionMatrix
 def test():
     global test_labels, test_data, weights
     testData = test_data.to_numpy()
@@ -247,7 +249,7 @@ def decision_boundry():
     plt.plot(x, y)
     plt.show()
 
-
+# call back when press the run button
 def run():
     initialize_Model_Dfs()
     run_single_layer()
@@ -335,17 +337,17 @@ def create_combo():
     feature2.place(x=260, y=150)
     feature2.current()
 
-
+# fill class2 Combobox by all data except the chosen class in another Combobox
 def update(*args):
     data2.set('')
     class2["values"] = [x for x in classes if x != data1.get()]
 
-
+# fill feature2 Combobox by all data except the chosen feature in another Combobox
 def update2(*args):
     data4.set('')
     feature2["values"] = [x for x in features if x != data3.get()]
 
-
+# call all function that create elements in Gui
 def gui():
     form.geometry("450x450")
     form.title("Form")
