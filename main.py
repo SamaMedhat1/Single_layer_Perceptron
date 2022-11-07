@@ -1,5 +1,4 @@
 from operator import abs
-
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
@@ -213,11 +212,16 @@ def decision_boundry():
     max_feature1 = max(train_data[selectedFeature1])
 
     # calculate Y1& Y2 from line eq: W0X1 + W1X2 +W2 = 0
-    y1 = ((weights[2] * -1) - (min_feature1 * weights[0])) / weights[1]
-    y2 = ((weights[2] * -1) - (max_feature1 * weights[0])) / weights[1]
+    # if there is bias
+    if use_bias:
+        y1 = ((weights[2] * -1) - (min_feature1 * weights[0])) / weights[1]
+        y2 = ((weights[2] * -1) - (max_feature1 * weights[0])) / weights[1]
+    else:
+        y1 = -(min_feature1 * weights[0]) / weights[1]
+        y2 = -(max_feature1 * weights[0]) / weights[1]
+
     x = [min_feature1, max_feature1]
     y = [y1, y2]
-    plt.plot(x, y)
 
     # create the figure
     figureName = 'decision_boundry'
@@ -240,6 +244,7 @@ def decision_boundry():
                scatterpoints=1,
                fontsize=8
                )
+    plt.plot(x, y)
     plt.show()
 
 
